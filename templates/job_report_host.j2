@@ -1,0 +1,40 @@
+    <!-- This is a 'child' template sourced from our master report template.
+        To reference a host's facts, use our loop variable named thehost, i.e. hostvars[thehost]['some_fact'] -->
+    <hr>
+    <!-- The header's id is used by the hyperlinks generated in the master report's sidebar -->
+    <h2 id="{{ thehost }}">{{ thehost }}</h2>
+
+    <!-- Give some barebones info if host was dropped from the play early; otherwise give host facts and job output.
+        Be sure to set default variables, to protect against missing output from failed hosts. -->
+    {% if hostvars[thehost]['missing']|bool %}
+
+      <p style="color:red;"><strong>HOST WAS UNAVAILABLE at the time of this report; please investigate whether this was a planned or unplanned outage.</strong></p>
+
+    {% else %}
+
+      <p><strong>Host info:</strong></p>
+      <ul>
+        <li>OS: {{ hostvars[thehost]['ansible_distribution'] | default('N/A') }} {{ hostvars[thehost]['ansible_distribution_version'] | default('N/A') }}, Kernel: {{ hostvars[thehost]['ansible_kernel'] | default('N/A') }}
+        <li>IP addresses: {{ hostvars[thehost]['ansible_all_ipv4_addresses'] | join(', ') | default('unknown') }}</li>
+      </ul>
+
+      <p>Job Status: <strong>{% if hostvars[thehost]['job_success']|bool %}Success{% else %}Failed{% endif %}</strong></p>
+
+      <!-- removing indentation for the output variables, because otherwise it is interpreted literally with the 'pre' tags -->
+      <p>Command 1 output:</p>
+      <div class="code">
+        <pre>
+{{ hostvars[thehost]['cmd1_saved_results']['stdout_lines'] | to_nice_yaml | default('no output') }}
+        </pre>
+      </div>
+
+      {% if hostvars[thehost]['cmd1_saved_results']['stderr_lines']|length > 0 %}
+        <p>Command 1 errors:</p>
+        <div class="code">
+          <pre>
+{{ hostvars[thehost]['cmd1_saved_results']['stderr_lines'] | to_nice_yaml | default('no output') }}
+          </pre>
+        </div>
+      {% endif %}
+
+    {% endif %}

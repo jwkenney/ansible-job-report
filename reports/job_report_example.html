@@ -1,0 +1,337 @@
+<html>
+<head>
+  <!-- Viewport options can make the page scale better on mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+  <!-- CSS styling for our HTML report -->
+  /* Most of this CSS stuff is copypasta from https://www.w3schools.com */
+/* To generate your own CSS stylesheet, see: https://www.w3schools.com/css/css_templates.asp*/
+
+/* Note that we use a variable from the playbook to tune the navbar width ( 200px )*/
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Style the side navigation */
+.sidenav {
+  height: 100%;
+  width: 200px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+}
+
+/* Side navigation links */
+.sidenav a {
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+  font-weight: normal;
+  font-size: small;
+}
+
+/* Side navigation text */
+.sidenav p {
+  color: lightgray;
+  padding: 5px;
+  text-decoration: none;
+  display: block;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Change color on hover */
+.sidenav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+/* Style the content */
+.content {
+  margin-left: 200px;
+  padding-left: 10px;
+}
+
+/* Used as nice trimming for our "command output" boxes in the job_report_host.j2 template*/
+.code {
+  background: #f9f9f9 none repeat scroll 0 0;
+  border: 1px solid #aaa;
+  display: table;
+  font-size: 100%;
+  font-family: monospace;
+  margin-bottom: 1em;
+  padding: 10px;
+  width: 95%;
+}
+
+/* Enable smart text-wrapping for any 'pre' tags (command output) */
+pre { white-space: pre-wrap; }
+
+/* Misc. formatting for tables, headers, etc */
+table { border:1px solid grey; }
+th {
+  padding: 2px;
+  border: 1px solid grey;
+}
+td { padding: 2px; }
+h2 {color: blue;}
+h3 {color: blue;}  </style>
+
+</head>
+
+<body>
+
+  <!-- This is our left-hand menu and navigation bar.
+  We will generate links for each host, breaking them up by job status. -->
+
+  <div class="sidenav">
+    <p><a style="text-align:center;font-weight:bold;font-size:normal" href="#top">Back to Top</a></p>
+    <hr>
+    <p>Host Results</p>
+        <a  href="#alpha.somecorp.com">alpha.somecorp.com</a>
+        <a  href="#beta.somecorp.com">beta.somecorp.com</a>
+        <a  href="#brazil.abraxiacorp.zone">brazil.abraxiacorp.zone</a>
+        <a style="color:grey;text-decoration:line-through" href="#derpyhost.corp.biz">derpyhost.corp.biz</a>
+        <a  href="#edgar.allen.poe">edgar.allen.poe</a>
+        <a  href="#some.starwars.character">some.starwars.character</a>
+        <a style="color:orangered" href="#winner.bingo.biz">winner.bingo.biz</a>
+        <hr>
+    <p>Missing Hosts</p>
+        <a href="#derpyhost.corp.biz">derpyhost.corp.biz</a>
+        <hr>
+    <p>Failed Hosts</p>
+      <a href="#winner.bingo.biz">winner.bingo.biz</a>
+      </div>
+
+  <div class="content">
+
+    <h1 id="top">Job Status Report</h1>
+    <p><i>Job started 2021-04-26 08:42:37</i></p>
+    <hr>
+
+    <h1 id="summary">Summary</h2>
+      <p><strong>Host Totals:</strong></p>
+      <ul>
+        <li>Total: 7</li>
+        <li>Successful: 5 </li>
+        <li>Failed: 1 </li>
+        <li>Missing: 1 </li>
+      </ul>
+
+    <p><strong>Kernel Versions in Environment:</strong></p>
+    <table style="width:auto;text-align:left;background: #f9f9f9 none repeat scroll 0 0;">
+            <tr><th>Kernel 2.6.32-754.35.1.el6.x86_64</th></tr>
+      <tr><td>alpha.somecorp.com</td></tr>
+            <tr><th>Kernel 3.10.0-1160.11.1.el7.x86_64</th></tr>
+      <tr><td>winner.bingo.biz</td></tr>
+            <tr><th>Kernel 3.10.0-1160.24.1.el7.x86_64</th></tr>
+      <tr><td>beta.somecorp.com edgar.allen.poe</td></tr>
+            <tr><th>Kernel 4.18.0-240.22.1.el8_3.x86_64</th></tr>
+      <tr><td>brazil.abraxiacorp.zone some.starwars.character</td></tr>
+          </table>
+
+    <!-- Now we loop through the hosts in our play, and generate per-host report fragments.
+    Each fragment will have a header that aligns with the "table of contents" links above.
+    Note that we use 'thehost' as our loop variable. -->
+              <!-- This is a 'child' template sourced from our master report template.
+        To reference a host's facts, use our loop variable named thehost, i.e. hostvars[thehost]['some_fact'] -->
+    <hr>
+    <!-- The header's id is used by the hyperlinks generated in the master report's sidebar -->
+    <h2 id="alpha.somecorp.com">alpha.somecorp.com</h2>
+
+    <!-- Give some barebones info if host was dropped from the play early; otherwise give host facts and job output.
+        Be sure to set default variables, to protect against missing output from failed hosts. -->
+    
+      <p><strong>Host info:</strong></p>
+      <ul>
+        <li>OS: RedHat 6.10, Kernel: 2.6.32-754.35.1.el6.x86_64
+        <li>IP addresses: 1.2.3.4, 10.0.0.52</li>
+      </ul>
+
+      <p>Job Status: <strong>Success</strong></p>
+
+      <!-- removing indentation for the output variables, because otherwise it is interpreted literally with the 'pre' tags -->
+      <p><strong>Command 1 output:</strong></p>
+      <div class="code">
+        <pre>
+- This is output from command 1.
+
+        </pre>
+      </div>
+
+      
+                  <!-- This is a 'child' template sourced from our master report template.
+        To reference a host's facts, use our loop variable named thehost, i.e. hostvars[thehost]['some_fact'] -->
+    <hr>
+    <!-- The header's id is used by the hyperlinks generated in the master report's sidebar -->
+    <h2 id="beta.somecorp.com">beta.somecorp.com</h2>
+
+    <!-- Give some barebones info if host was dropped from the play early; otherwise give host facts and job output.
+        Be sure to set default variables, to protect against missing output from failed hosts. -->
+    
+      <p><strong>Host info:</strong></p>
+      <ul>
+        <li>OS: RedHat 7.9, Kernel: 3.10.0-1160.24.1.el7.x86_64
+        <li>IP addresses: 5.6.7.8, 10.0.0.53</li>
+      </ul>
+
+      <p>Job Status: <strong>Success</strong></p>
+
+      <!-- removing indentation for the output variables, because otherwise it is interpreted literally with the 'pre' tags -->
+      <p><strong>Command 1 output:</strong></p>
+      <div class="code">
+        <pre>
+- This is output from command 1.
+
+        </pre>
+      </div>
+
+      
+                  <!-- This is a 'child' template sourced from our master report template.
+        To reference a host's facts, use our loop variable named thehost, i.e. hostvars[thehost]['some_fact'] -->
+    <hr>
+    <!-- The header's id is used by the hyperlinks generated in the master report's sidebar -->
+    <h2 id="brazil.abraxiacorp.zone">brazil.abraxiacorp.zone</h2>
+
+    <!-- Give some barebones info if host was dropped from the play early; otherwise give host facts and job output.
+        Be sure to set default variables, to protect against missing output from failed hosts. -->
+    
+      <p><strong>Host info:</strong></p>
+      <ul>
+        <li>OS: RedHat 8.3, Kernel: 4.18.0-240.22.1.el8_3.x86_64
+        <li>IP addresses: 7.8.9.10,10.0.0.23</li>
+      </ul>
+
+      <p>Job Status: <strong>Success</strong></p>
+
+      <!-- removing indentation for the output variables, because otherwise it is interpreted literally with the 'pre' tags -->
+      <p><strong>Command 1 output:</strong></p>
+      <div class="code">
+        <pre>
+- This is output from command 1.
+
+        </pre>
+      </div>
+
+      
+                  <!-- This is a 'child' template sourced from our master report template.
+        To reference a host's facts, use our loop variable named thehost, i.e. hostvars[thehost]['some_fact'] -->
+    <hr>
+    <!-- The header's id is used by the hyperlinks generated in the master report's sidebar -->
+    <h2 id="derpyhost.corp.biz">derpyhost.corp.biz</h2>
+
+    <!-- Give some barebones info if host was dropped from the play early; otherwise give host facts and job output.
+        Be sure to set default variables, to protect against missing output from failed hosts. -->
+    
+      <p style="color:red;"><strong>Host was unavailable at the time of this job; please investigate whether this was a planned or unplanned outage.</strong></p>
+
+                  <!-- This is a 'child' template sourced from our master report template.
+        To reference a host's facts, use our loop variable named thehost, i.e. hostvars[thehost]['some_fact'] -->
+    <hr>
+    <!-- The header's id is used by the hyperlinks generated in the master report's sidebar -->
+    <h2 id="edgar.allen.poe">edgar.allen.poe</h2>
+
+    <!-- Give some barebones info if host was dropped from the play early; otherwise give host facts and job output.
+        Be sure to set default variables, to protect against missing output from failed hosts. -->
+    
+      <p><strong>Host info:</strong></p>
+      <ul>
+        <li>OS: RedHat 7.9, Kernel: 3.10.0-1160.24.1.el7.x86_64
+        <li>IP addresses: 10.0.0.55</li>
+      </ul>
+
+      <p>Job Status: <strong>Success</strong></p>
+
+      <!-- removing indentation for the output variables, because otherwise it is interpreted literally with the 'pre' tags -->
+      <p><strong>Command 1 output:</strong></p>
+      <div class="code">
+        <pre>
+- This is output from command 1.
+
+        </pre>
+      </div>
+
+      
+                  <!-- This is a 'child' template sourced from our master report template.
+        To reference a host's facts, use our loop variable named thehost, i.e. hostvars[thehost]['some_fact'] -->
+    <hr>
+    <!-- The header's id is used by the hyperlinks generated in the master report's sidebar -->
+    <h2 id="some.starwars.character">some.starwars.character</h2>
+
+    <!-- Give some barebones info if host was dropped from the play early; otherwise give host facts and job output.
+        Be sure to set default variables, to protect against missing output from failed hosts. -->
+    
+      <p><strong>Host info:</strong></p>
+      <ul>
+        <li>OS: RedHat 8.3, Kernel: 4.18.0-240.22.1.el8_3.x86_64
+        <li>IP addresses: 10.0.0.98</li>
+      </ul>
+
+      <p>Job Status: <strong>Success</strong></p>
+
+      <!-- removing indentation for the output variables, because otherwise it is interpreted literally with the 'pre' tags -->
+      <p><strong>Command 1 output:</strong></p>
+      <div class="code">
+        <pre>
+- This is output from command 1.
+
+        </pre>
+      </div>
+
+      
+                  <!-- This is a 'child' template sourced from our master report template.
+        To reference a host's facts, use our loop variable named thehost, i.e. hostvars[thehost]['some_fact'] -->
+    <hr>
+    <!-- The header's id is used by the hyperlinks generated in the master report's sidebar -->
+    <h2 id="winner.bingo.biz">winner.bingo.biz</h2>
+
+    <!-- Give some barebones info if host was dropped from the play early; otherwise give host facts and job output.
+        Be sure to set default variables, to protect against missing output from failed hosts. -->
+      <p style="color:red"><strong>Host encountered issues during job execution, see information below.</strong></p>
+      <p><strong>Host info:</strong></p>
+      <ul>
+        <li>OS: RedHat 7.9, Kernel: 3.10.0-1160.11.1.el7.x86_64
+        <li>IP addresses: 10.0.0.83</li>
+      </ul>
+
+      <p>Job Status: <strong>Failed</strong></p>
+
+      <!-- removing indentation for the output variables, because otherwise it is interpreted literally with the 'pre' tags -->
+      <p><strong>Command 1 output:</strong></p>
+      <div class="code">
+        <pre>
+- This is output from command 1.
+
+        </pre>
+      </div>
+
+      <p><strong>Command 1 errors:</strong></p>
+      <div class="code">
+        <pre>
+- Oh no! We had some problems.
+- This box is tuned to only appear in the template, if we saw any lines saved to STDERR in our command task results.
+        </pre>
+      </div>
+            
+    <hr>
+    <p><i>Generated by Ansible playbook <strong>job_report.yaml</strong><br>
+    These reports can also be found in the Ansible host's <strong>reports/</strong> folder.</i></p>
+  
+  </div>
+
+
+</body>
+
+</html>

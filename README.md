@@ -38,7 +38,7 @@ ansible-job-report/
     * `failed_style` / `missing_style`: This is in-line CSS styling for 'failed' or 'missing' servers in the navbar. To make all host entries look the same in the navbar, set these variables to empty. 
 1. In the `pre_tasks` section of the main play, we set two custom facts for all hosts: `job_success: False`, and `missing: True`. Basically, we assume that all hosts are failed-and-missing, until later tasks prove otherwise. This allows us to catch any unresponsive or failed hosts that drop from the play. Unavailable hosts are usually flushed out during fact gathering, so we gather facts manually and set `missing: False` for any survivors.
 1. Deciding what "success" means, is important for your report. This playbook sets `job_success: True` in the `post_tasks` section at the end of the playbook. So for this playbook, "success" simply means that the host made it to the end of the play without any fatal errors. Depending on the work you are performing (and your affinity for the `ignore_errors` param), you may want to set another host fact to indicate a partial or successful-with-errors state.
-1. When you have When you are comfortable with the default tasks in the playbook, open up `templates/job_report_master.j2`
+1. Crawl through the Jinja templates to see how they work, and add or remove content at-will. Both templates rely on facts gathered in the `pre_task` and `post_task` sections of the playbook, so edit those tasks with caution.
 
 ## Bonus features
 

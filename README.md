@@ -29,10 +29,10 @@ ansible-job-report/
 ## How to use
 
 1. The `job_report.yaml` playbook is divided into three sections:
-   1. `pre_tasks:` This is where we set some initial facts for job status, and flag any hosts that are missing.
-   1. `tasks:` This is where you should put your stuff! There is an example command to get you started.
-   1. `post_tasks:` This is where the report is assembled. We also mark hosts as 'successful' if they make it that far.
-1. In the main  playbook, go to the `vars:` section.
+   * `pre_tasks:` This is where we set some initial facts for job status, and flag any hosts that are missing.
+   * `tasks:` This is where you should put your stuff! There is an example command to get you started.
+   * `post_tasks:` This is where the report is assembled. We also mark hosts as 'successful' if they make it that far.
+1. See the `vars:` section of the playbook for more settings.
     * To enable email reports- set `send_email: true`, and fill in data for your company's mail server (`smtp_user` and `smtp_pass` are optional).
     * `nav_width`: Width in pixels for the nav bar. Tune this if you have very long hostnames
     * `failed_style` / `missing_style`: This is in-line CSS styling for 'failed' or 'missing' servers in the navbar. To make all host entries look the same in the navbar, set these variables to empty. 

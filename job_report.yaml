@@ -1,18 +1,11 @@
 ---
 
-# Using Ansible server as authoritative source of date and time
+# Using Ansible server's facts as the authoritative source for date and time
 - name: PLAY 1 Gather facts for local Ansible server to get date and time
   hosts: localhost
   connection: local
   gather_facts: yes
 
-
-# We should guard against the possibility that a host is down or missing, which could cause it to be removed from play
-# and 'disappear' from our host facts- or else generate template errors due to missing output.
-# One way to account for this (shown below), is to disable fact-gathering initially, and then set a few default facts
-# for job status. Then you can run the 'setup' module manually, and even a failed/missing host will still have some status facts.
-# The below example sets all hosts to "failed/missing", and we tune the status from there based on job results
-# (i.e. the host is guilty until proven innocent).
 
 - name: PLAY 2 Run jobs and generate report
   hosts: all
@@ -24,7 +17,11 @@
     - community.general
 
   vars:
+    # CSS styling for navbar: menu width, failed/missing colors
     nav_width: 200px
+    failed_style: 'color:orangered'
+    missing_style: 'color:grey;text-decoration:line-through'
+    # Email options
     send_email: false
     smtp_host: mail.yourcompany.com
     smtp_port: 25
@@ -44,29 +41,43 @@
         path: "./reports"
         state: directory
     
-    - name: Set initial job status to catch unavailable hosts
+    # See README.md for an explanation of what is going on here.
+    # We set hosts as failed/missing until proven otherwise.
+    - name: Set initial job status to catch missing/failed hosts
       set_fact:
-        job_success: no
+        job_success: False
         missing: True
-
-  tasks:
-
+    
     - name: Gather server facts and possibly weed out unavailable hosts
       setup:
     
-    - name: Run a command and save the results, no matter the outcome
+    - name: Set remaining hosts as 'not missing'
+      set_fact:
+        missing: False
+
+  tasks:
+    
+    ############################
+    # Add your own tasks here! #
+    ############################
+    
+    - name: Run a command and save the results (ignore errors)
       shell:
         cmd: echo 'This is output from command 1.'
       ignore_errors: yes
       register: cmd1_results
     
-    - name: Set host facts for task success/failure, host presence, and command output
+    - name: Save command output for later
       set_fact:
-        job_success: "{% if cmd1_results.rc == 0 %}True{% else %}False{% endif %}"
-        missing: False
         cmd1_saved_results: "{{ cmd1_results }}"
-    
-    # Saving curated lists here, to avoid Jinja gore in the report template
+
+  post_tasks:
+
+    - name: Mark surviving hosts as 'successful'
+      set_fact:
+        job_success: True
+
+    # Saving curated lists of hosts as localhost facts, to make the Jinja loops easier to read in the template. 
     # To use: hostvars['localhost']['success_list'] , etc
     - name: Save facts to Ansible server for kernel list, date/time, and success/failed/missing hosts
       delegate_to: localhost
@@ -75,28 +86,27 @@
       set_fact:
         date_str: "{{ hostvars['localhost']['ansible_date_time']['date'] }}_{{ hostvars['localhost']['ansible_date_time']['time'] | replace(':','-') }}"
         date_str_pretty: "{{ hostvars['localhost']['ansible_date_time']['date'] }} {{ hostvars['localhost']['ansible_date_time']['time'] }}"
-        kernels_list: "{{ hostvars | json_query(kernel_query) | unique | sort }}"
-        success_list: "{{ hostvars | dict2items | json_query(success_query) }}"
-        failed_list: "{{ hostvars | dict2items | json_query(failed_query) }}"
-        missing_list: "{{ hostvars | dict2items | json_query(missing_query) }}"
+        kernels_list: '{{ hostvars | json_query(kernel_query) | unique | sort }}'
+        success_list: '{{ hostvars | dict2items | json_query(success_query) }}'
+        failed_list: '{{ hostvars | dict2items | json_query(failed_query) }}'
+        missing_list: '{{ hostvars | dict2items | json_query(missing_query) }}'
       vars:
-        kernel_query: '*.ansible_kernel'
-        success_query: '[?value.job_success == `yes`]'
-        failed_query: '[?value.job_success == `no`]'
-        missing_query: '[?value.missing == `yes`]'
+        kernel_query: "*.ansible_kernel"
+        success_query: "[?value.job_success==`true`].key"
+        failed_query: "[?value.job_success==`false` && value.missing==`false`].key"
+        missing_query: "[?value.missing==`true`].key"
 
-    - name: Debug lists
+    - name: Debug variables (-v)
       delegate_to: localhost
       run_once: yes
       debug:
         msg: "{{ item }}"
+        verbosity: 1
       loop:
         - "Success: {{ hostvars['localhost']['success_list'] }}"
         - "Failed: {{ hostvars['localhost']['failed_list'] }}"
         - "Missing: {{ hostvars['localhost']['missing_list'] }}"
-
-
-  post_tasks:
+        - "Kernels: {{ hostvars['localhost']['kernels_list'] }}"
 
     - name: Generate job report under ./reports/job_report_{{ hostvars['localhost']['date_str'] }}.html
       delegate_to: localhost
@@ -106,7 +116,7 @@
         src: job_report_master.j2
         dest: "reports/job_report_{{ hostvars['localhost']['date_str'] }}.html"
 
-    - name: Send email report from Ansible server
+    - name: Send email report from Ansible server (send_email={{ send_email }})
       delegate_to: localhost
       run_once: yes
       when: send_email
@@ -121,9 +131,9 @@
         subtype: html
         body: |
           <p>See attached for a detailed job report.</p>
-          <p style="color:blue;"><strong>Successful hosts</strong>:<br><br>{% for item in ansible_play_hosts_all | sort %}{% if hostvars[item]['job_success']|bool %}{{ item }} {% endif %}{% endfor %}</p>
-          <p style="color:red;"><strong>Failed hosts</strong>: <br><br>{% for item in ansible_play_hosts_all | sort %}{% if not hostvars[item]['job_success']|bool %}{{ item }} {% endif %}{% endfor %}</p>
-          <p style="color:fuchsia;"><strong>Missing hosts</strong>: {% for item in ansible_play_hosts_all | sort %}{% if hostvars[item]['missing']|bool %}{{ item }} {% endif %}{% endfor %}</p>
+          <p><strong>Successful hosts</strong>:<br><br>{{ hostvars['localhost']['success_list'] | join(' ') }}</p>
+          <p style="color:red;"><strong>Failed hosts</strong>: <br><br>{{ hostvars['localhost']['failed_list'] | join(' ') }}</p>
+          <p style="color:fuchsia;"><strong>Missing hosts</strong>: {{ hostvars['localhost']['missing_list'] | join(' ') }}</p>
           <p><i>Generated by playbook {{ playbook_dir }}/job_report.yml on {{ hostvars['localhost']['date_str_pretty'] }}</i></p>
         attach:
           - "reports/job_report_{{ hostvars['localhost']['date_str'] }}.html"

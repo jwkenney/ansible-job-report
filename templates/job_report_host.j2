@@ -1,16 +1,16 @@
-    <!-- This is a 'child' template sourced from our master report template.
-        To reference a host's facts, use our loop variable named thehost, i.e. hostvars[thehost]['some_fact'] -->
+    <!-- This is a 'child' template sourced from our master report template. -->
+    <!-- To reference a host's facts, use our loop variable named thehost, i.e. hostvars[thehost]['some_fact'] -->
     <hr>
-    <!-- The header's id is used by the hyperlinks generated in the master report's sidebar -->
     <h2 id="{{ thehost }}">{{ thehost }}</h2>
 
-    <!-- Give some barebones info if host was dropped from the play early; otherwise give host facts and job output.
-        Be sure to set default variables, to protect against missing output from failed hosts. -->
+    <!-- If host was missing, give a generic error. Otherwise, print facts and job output. Use default() to guard against missing variables. -->
     {% if hostvars[thehost]['missing']|bool %}
 
-      <p style="color:red;"><strong>HOST WAS UNAVAILABLE at the time of this report; please investigate whether this was a planned or unplanned outage.</strong></p>
+      <p style="color:red;"><strong>Host was unavailable at the time of this job; please investigate whether this was a planned or unplanned outage.</strong></p>
 
     {% else %}
+
+      {% if not hostvars[thehost]['job_success']|bool %}<p style="color:red"><strong>Host encountered issues during job execution, see information below.</strong></p>{% endif %}
 
       <p><strong>Host info:</strong></p>
       <ul>
@@ -20,8 +20,8 @@
 
       <p>Job Status: <strong>{% if hostvars[thehost]['job_success']|bool %}Success{% else %}Failed{% endif %}</strong></p>
 
-      <!-- removing indentation for the output variables, because otherwise it is interpreted literally with the 'pre' tags -->
-      <p>Command 1 output:</p>
+      <!-- We don't indent anything between 'pre' tags , because the space will be taken literally -->
+      <p><strong>Command 1 output:</strong></p>
       <div class="code">
         <pre>
 {{ hostvars[thehost]['cmd1_saved_results']['stdout_lines'] | to_nice_yaml | default('no output') }}
@@ -29,7 +29,8 @@
       </div>
 
       {% if hostvars[thehost]['cmd1_saved_results']['stderr_lines']|length > 0 %}
-        <p>Command 1 errors:</p>
+        <!-- This code snippet will only appear if our command task had any lines printed to stderr -->
+        <p><strong>Command 1 errors:</strong></p>
         <div class="code">
           <pre>
 {{ hostvars[thehost]['cmd1_saved_results']['stderr_lines'] | to_nice_yaml | default('no output') }}

@@ -1,7 +1,7 @@
 /* Most of this CSS stuff is copypasta from https://www.w3schools.com */
 /* To generate your own CSS stylesheet, see: https://www.w3schools.com/css/css_templates.asp*/
 
-/* Note that we use a variable from the playbook to tune the navbar width ( {{ nav_width }} )*/
+/* Note that we use a variable from the playbook to tune the navbar width ( {{ nav_width|default('200') }} )*/
 
 * {
   box-sizing: border-box;
@@ -15,7 +15,7 @@ body {
 /* Style the side navigation */
 .sidenav {
   height: 100%;
-  width: {{ nav_width }};
+  width: {{ nav_width | default('200px') }};
   position: fixed;
   z-index: 1;
   top: 0;
@@ -32,7 +32,7 @@ body {
   display: block;
   text-align: left;
   font-weight: normal;
-  fong-size: small;
+  font-size: small;
 }
 
 /* Side navigation text */
@@ -53,7 +53,7 @@ body {
 
 /* Style the content */
 .content {
-  margin-left: {{ nav_width }};
+  margin-left: {{ nav_width | default('200px') }};
   padding-left: 10px;
 }
 

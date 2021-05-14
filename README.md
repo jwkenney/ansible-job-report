@@ -1,12 +1,14 @@
 # Better job reporting with Ansible, using Jinja + HTML
 
-If you have Ansible-based jobs that require more elegant reporting or auditing, a common pattern is to assemble an HTML summary report of the work that was done. It's easier than you think, especially if you have an example to start with!
+For Ansible jobs that have reporting or auditing requirements, a common pattern is to create an HTML summary report of the work that was done. It's easier than you think, especially if you have an example to start with!
 
 ![Demo](demo.gif)
 
 This playbook runs a sample command, gathers some facts, and then generates an HTML summary report. The playbook also supports sending the report as an email attachment.
 
 The report is pure HTML + CSS, with no external dependencies or javascript. If you want to play with your own CSS report layouts, [w3schools](https://www.w3schools.com/css/css_templates.asp) has an interactive CSS editor with some starter templates.
+
+Tested primarily on Ansible 2.9 and RHEL 6/7/8, but should be forward-compatible with Ansible 3.x.
 
 ## Contents
 ```

@@ -58,7 +58,7 @@
     <table style="width:auto;text-align:left;background: #f9f9f9 none repeat scroll 0 0;">
       {% for item in hostvars['localhost']['kernels_list'] %}
       <tr><th>Kernel {{ item }}</th></tr>
-      <tr><td>{{ hostvars | dict2items | json_query('[?value.ansible_kernel==`' + item + '`].key') | join(' ') | default('NO KERNELS FOUND')}}</td></tr>
+      <tr><td>{{ hostvars | dict2items | json_query('[?value.ansible_kernel==`' + item + '`].key') | join(' ') | default('NO KERNELS FOUND') }}</td></tr>
       {% endfor %}
     </table>
 

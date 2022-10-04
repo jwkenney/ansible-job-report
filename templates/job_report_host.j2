@@ -15,7 +15,7 @@
       <p><strong>Host info:</strong></p>
       <ul>
         <li>OS: {{ hostvars[thehost]['ansible_distribution'] | default('N/A') }} {{ hostvars[thehost]['ansible_distribution_version'] | default('N/A') }}, Kernel: {{ hostvars[thehost]['ansible_kernel'] | default('N/A') }}
-        <li>IP addresses: {{ hostvars[thehost]['ansible_all_ipv4_addresses'] | join(', ') | default('unknown') }}</li>
+        <li>IP addresses: {{ hostvars[thehost]['ansible_all_ipv4_addresses'] | d(['unknown']) | join(', ') }}</li>
       </ul>
 
       <p>Job Status: <strong>{% if hostvars[thehost]['job_success']|bool %}Success{% else %}Failed{% endif %}</strong></p>
@@ -24,16 +24,16 @@
       <p><strong>Command 1 output:</strong></p>
       <div class="code">
         <pre>
-{{ hostvars[thehost]['cmd1_saved_results']['stdout_lines'] | to_nice_yaml | default('no output') }}
+{{ hostvars[thehost]['cmd1_results']['stdout'] | default('no output') | trim }}
         </pre>
       </div>
 
-      {% if hostvars[thehost]['cmd1_saved_results']['stderr_lines']|length > 0 %}
+      {% if hostvars[thehost]['cmd1_results']['stderr_lines'] | d([]) | length > 0 %}
         <!-- This code snippet will only appear if our command task had any lines printed to stderr -->
         <p><strong>Command 1 errors:</strong></p>
         <div class="code">
           <pre>
-{{ hostvars[thehost]['cmd1_saved_results']['stderr_lines'] | to_nice_yaml | default('no output') }}
+{{ hostvars[thehost]['cmd1_results']['stderr'] | default('no output') | trim }}
           </pre>
         </div>
       {% endif %}

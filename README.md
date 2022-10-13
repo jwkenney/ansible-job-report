@@ -23,7 +23,7 @@ ansible-job-report/
 ```
 
 * `job_report.yaml` : The main playbook
-* `reports/` : The default save location for HTML reports
+* `reports/` : A folder with an example report
 * `templates/job_report_master.j2` : The main HTML report template
 * `templates/job_report_host.j2` : A report fragment that provides per-host job details
 * `templates/stylesheet.css.j2` : Contains CSS stylesheet info, pulled into the master template.

@@ -1,7 +1,7 @@
 ---
 # This is a simpler, self-contained version of job_report.yml.
 - name: Run jobs and generate simple report
-  hosts: all
+  hosts: "{{ hosts_apply }}"
   gather_facts: no
   order: sorted
 
@@ -9,9 +9,17 @@
     - ansible.builtin
     - community.general
 
+  vars_prompt:
+    - name: "hosts_apply"
+      prompt: "Host or Group to apply this Playbook"
+      private: no
+    - name: "output_dir"
+      prompt: "Output Directory Report"
+      private: no
+
   vars:
     # Location for job reports
-    outdir: /var/tmp/reports
+    outdir: "{{ output_dir }}"
   
   pre_tasks:
     
@@ -28,7 +36,7 @@
     
     - name: Run a command and save the results
       command:
-        cmd: echo "This is output from command 1."
+        cmd: dnf check-update
       register: cmd1_results
   
   post_tasks:
